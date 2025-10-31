@@ -44,26 +44,13 @@ CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
 CREATE INDEX IF NOT EXISTS idx_jobs_company ON jobs(company);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
--- Create Row Level Security (RLS) policies
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
+-- Disable Row Level Security (RLS) since we're using custom JWT authentication at API level
+-- The API routes handle authentication and authorization
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE jobs DISABLE ROW LEVEL SECURITY;
 
--- Users can only see their own data
-CREATE POLICY "Users can view own profile" ON users
-  FOR SELECT USING (auth.uid()::text = id::text);
-
-CREATE POLICY "Users can update own profile" ON users
-  FOR UPDATE USING (auth.uid()::text = id::text);
-
--- Users can only see their own jobs
-CREATE POLICY "Users can view own jobs" ON jobs
-  FOR SELECT USING (auth.uid()::text = user_id::text);
-
-CREATE POLICY "Users can insert own jobs" ON jobs
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
-
-CREATE POLICY "Users can update own jobs" ON jobs
-  FOR UPDATE USING (auth.uid()::text = user_id::text);
-
-CREATE POLICY "Users can delete own jobs" ON jobs
-  FOR DELETE USING (auth.uid()::text = user_id::text);
+-- Note: If you want to use RLS with custom JWT authentication, you would need to:
+-- 1. Set up a custom JWT claim in Supabase
+-- 2. Create a function to extract user_id from the JWT
+-- 3. Use that function in the RLS policies
+-- For this app, security is handled at the API route level which is sufficient.
